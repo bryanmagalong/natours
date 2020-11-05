@@ -26,7 +26,7 @@ const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`),
 );
 
-// Read
+// GET all tours
 app.get('/api/v1/tours', (req, res) => {
   res.status(200).json({
     status: 'success',
@@ -37,7 +37,29 @@ app.get('/api/v1/tours', (req, res) => {
   });
 });
 
-// Create
+// GET by id
+app.get('/api/v1/tours/:id', (req, res) => {
+  // req.params is an object that contains dynamic variables
+  console.log(req.params);
+  // req.params.id is a string,
+  // req.params.id*1 convert it into a number
+  const id = req.params.id * 1;
+  // we get the tour with the id specified in the route
+  const tour = tours.find((elem) => elem.id === id);
+
+  // if tour is undefined
+  if (!tour)
+    return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
+
+  res.status(200).json({
+    status: 'success',
+    data: {
+      tour,
+    },
+  });
+});
+
+// POST a tour
 app.post('/api/v1/tours', (req, res) => {
   // we need a middleware to get body from req
   // console.log(req.body);
