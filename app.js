@@ -141,15 +141,18 @@ const deleteTour = (req, res) => {
 };
 
 // ROUTES ==================
-app.route('/api/v1/tours').get(getAllTours).post(createTour); // we set the route url '/api/v1/tours' for GET all tours and POST methods
-app
-  .route('/api/v1/tours/:id')
-  .get(getTour)
-  .patch(updateTour)
-  .delete(deleteTour);
+const tourRouter = express.Router(); // creates a new router
+const userRouter = express.Router();
 
-app.route('/api/v1/users').get(getAllUsers).post(createUser);
-app.route('/api/v1/user/:id').get(getUser).patch(updateUser).delete(deleteUser);
+tourRouter.route('/').get(getAllTours).post(createTour);
+tourRouter.route('/:id').get(getTour).patch(updateTour).delete(deleteTour);
+
+userRouter.route('/').get(getAllUsers).post(createUser);
+userRouter.route('/:id').get(getUser).patch(updateUser).delete(deleteUser);
+
+// Mouting the routers
+app.use('/api/v1/tours', tourRouter); //connects the tourRouter to the '/api/v1/tours' url
+app.use('/api/v1/users', userRouter);
 
 const port = 3000;
 app.listen(port, () => {
