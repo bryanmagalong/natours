@@ -6,6 +6,13 @@ const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`),
 );
 
+exports.checkId = (req, res, next, val) => {
+  console.log(`Tour id is : ${val}`);
+  if (req.params.id * 1 > tours.length)
+    return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
+  next();
+};
+
 exports.getAllTours = (req, res) => {
   res.status(200).json({
     status: 'success',
@@ -18,17 +25,11 @@ exports.getAllTours = (req, res) => {
 };
 
 exports.getTour = (req, res) => {
-  // req.params is an object that contains dynamic variables
-  console.log(req.params);
   // req.params.id is a string,
   // req.params.id*1 convert it into a number
   const id = req.params.id * 1;
   // we get the tour with the id specified in the route
   const tour = tours.find((elem) => elem.id === id);
-
-  // if tour is undefined
-  if (!tour)
-    return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
 
   res.status(200).json({
     status: 'success',
@@ -39,9 +40,6 @@ exports.getTour = (req, res) => {
 };
 
 exports.createTour = (req, res) => {
-  // we need a middleware to get body from req
-  // console.log(req.body);
-
   // create a new tour object
   // don't need to specify the id with a databased API
   const newId = tours[tours.length - 1].id + 1;
@@ -67,9 +65,7 @@ exports.createTour = (req, res) => {
 };
 
 exports.updateTour = (req, res) => {
-  //TODO when we get into databased API
-  if (req.params.id * 1 > tours.length)
-    return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
+  //TODO when we get into databased AP
 
   res.status(200).json({
     status: 'success',
@@ -78,9 +74,6 @@ exports.updateTour = (req, res) => {
 };
 
 exports.deleteTour = (req, res) => {
-  if (req.params.id * 1 > tours.length)
-    return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
-
   res.status(204).json({
     status: 'success',
     data: null, // null since we delete the data
