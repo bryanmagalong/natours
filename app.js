@@ -1,11 +1,12 @@
 const express = require('express');
 const fs = require('fs');
+const morgan = require('morgan');
 
 const app = express();
 
-// Middleware
-// The middleware attach a body in req
-app.use(express.json());
+// MIDDLEWARES ================
+app.use(morgan('dev')); // generate response logs
+app.use(express.json()); // The middleware attach a body in req
 
 app.use((req, res, next) => {
   console.log('Hello from the middleware !!!!');
@@ -17,6 +18,7 @@ app.use((req, res, next) => {
   next(); // NEVER FORGET TO USE next(), otherwise the response-request cycle will be stuck
 });
 
+// ROUTES HANDLERS ===============
 // Read tours file
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`),
@@ -103,22 +105,7 @@ const deleteTour = (req, res) => {
   });
 };
 
-// ENDPOINTS ==================
-// GET all tours
-// app.get('/api/v1/tours', getAllTours);
-
-// GET by id
-// app.get('/api/v1/tours/:id', getTour);
-
-// POST a tour
-// app.post('/api/v1/tours', createTour);
-
-// PATCH a tour by id
-// app.patch('/api/v1/tours/:id', updateTour);
-
-// DELETE a tour by id
-// app.delete('/api/v1/tours/:id', deleteTour);
-
+// ROUTES ==================
 app.route('/api/v1/tours').get(getAllTours).post(createTour); // we set the route url '/api/v1/tours' for GET all tours and POST methods
 app
   .route('/api/v1/tours/:id')
