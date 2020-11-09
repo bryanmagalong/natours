@@ -7,6 +7,16 @@ const app = express();
 // The middleware attach a body in req
 app.use(express.json());
 
+app.use((req, res, next) => {
+  console.log('Hello from the middleware !!!!');
+  next(); // NEVER FORGET TO USE next(), otherwise the response-request cycle will be stuck
+});
+
+app.use((req, res, next) => {
+  req.requestTime = new Date().toISOString(); // we can now get the request time for all of our requests
+  next(); // NEVER FORGET TO USE next(), otherwise the response-request cycle will be stuck
+});
+
 // Read tours file
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`),
@@ -15,6 +25,7 @@ const tours = JSON.parse(
 const getAllTours = (req, res) => {
   res.status(200).json({
     status: 'success',
+    requestedAt: req.requestTime,
     results: tours.length,
     data: {
       tours,
@@ -108,7 +119,7 @@ const deleteTour = (req, res) => {
 // DELETE a tour by id
 // app.delete('/api/v1/tours/:id', deleteTour);
 
-app.route('/api/v1/tours').get(getAllTours).post(createTour); // we set the route for GET and POST methods
+app.route('/api/v1/tours').get(getAllTours).post(createTour); // we set the route url '/api/v1/tours' for GET all tours and POST methods
 app
   .route('/api/v1/tours/:id')
   .get(getTour)
