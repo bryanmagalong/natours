@@ -7,27 +7,12 @@ const app = express();
 // The middleware attach a body in req
 app.use(express.json());
 
-/**
- * app.get(route, callback)
- * res.status(statusCode).json(Object)
- */
-// app.get('/', (req, res) => {
-//   res
-//     .status(200)
-//     .json({ message: 'Hello from the server side!', app: 'Natours' });
-// });
-
-// app.post('/', (req, res) => {
-//   res.send('You can post in to this endpoints ... ');
-// });
-
 // Read tours file
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`),
 );
 
-// GET all tours
-app.get('/api/v1/tours', (req, res) => {
+const getAllTours = (req, res) => {
   res.status(200).json({
     status: 'success',
     results: tours.length,
@@ -35,10 +20,9 @@ app.get('/api/v1/tours', (req, res) => {
       tours,
     },
   });
-});
+};
 
-// GET by id
-app.get('/api/v1/tours/:id', (req, res) => {
+const getTour = (req, res) => {
   // req.params is an object that contains dynamic variables
   console.log(req.params);
   // req.params.id is a string,
@@ -57,10 +41,9 @@ app.get('/api/v1/tours/:id', (req, res) => {
       tour,
     },
   });
-});
+};
 
-// POST a tour
-app.post('/api/v1/tours', (req, res) => {
+const createTour = (req, res) => {
   // we need a middleware to get body from req
   // console.log(req.body);
 
@@ -86,10 +69,9 @@ app.post('/api/v1/tours', (req, res) => {
       });
     },
   );
-});
+};
 
-// PATCH a tour by id
-app.patch('/api/v1/tours/:id', (req, res) => {
+const updateTour = (req, res) => {
   //TODO when we get into databased API
   if (req.params.id * 1 > tours.length)
     return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
@@ -98,10 +80,9 @@ app.patch('/api/v1/tours/:id', (req, res) => {
     status: 'success',
     data: '<Updated tour>',
   });
-});
+};
 
-// DELETE a tour by id
-app.delete('/api/v1/tours/:id', (req, res) => {
+const deleteTour = (req, res) => {
   if (req.params.id * 1 > tours.length)
     return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
 
@@ -109,7 +90,30 @@ app.delete('/api/v1/tours/:id', (req, res) => {
     status: 'success',
     data: null, // null since we delete the data
   });
-});
+};
+
+// ENDPOINTS ==================
+// GET all tours
+// app.get('/api/v1/tours', getAllTours);
+
+// GET by id
+// app.get('/api/v1/tours/:id', getTour);
+
+// POST a tour
+// app.post('/api/v1/tours', createTour);
+
+// PATCH a tour by id
+// app.patch('/api/v1/tours/:id', updateTour);
+
+// DELETE a tour by id
+// app.delete('/api/v1/tours/:id', deleteTour);
+
+app.route('/api/v1/tours').get(getAllTours).post(createTour); // we set the route for GET and POST methods
+app
+  .route('/api/v1/tours/:id')
+  .get(getTour)
+  .patch(updateTour)
+  .delete(deleteTour);
 
 const port = 3000;
 app.listen(port, () => {
