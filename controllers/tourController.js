@@ -6,10 +6,26 @@ const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`),
 );
 
+// Verify if the id exists
 exports.checkId = (req, res, next, val) => {
   console.log(`Tour id is : ${val}`);
-  if (req.params.id * 1 > tours.length)
+  if (val * 1 > tours.length)
     return res.status(404).json({ status: 'fail', message: 'Invalid ID' });
+  next();
+};
+
+// Verify if the name or the price is missing in the request body
+exports.checkBody = (req, res, next) => {
+  const { name, price } = req.body;
+
+  // console.log(`Name: ${name}; Price: ${price}`);
+
+  if (!name || !price) {
+    return res.status(400).json({
+      status: 'fail',
+      message: 'Missing name or price !!!',
+    });
+  }
   next();
 };
 
