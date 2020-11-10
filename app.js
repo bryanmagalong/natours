@@ -9,6 +9,7 @@ const app = express();
 // MIDDLEWARES ================
 app.use(morgan('dev')); // generate response logs
 app.use(express.json()); // The middleware attach a body in req
+app.use(express.static(`${__dirname}/public`)); // we can now access to static files from public folder
 
 app.use((req, res, next) => {
   console.log('Hello from the middleware !!!!');
