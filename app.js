@@ -7,7 +7,9 @@ const userRouter = require('./routes/userRoutes');
 const app = express();
 
 // MIDDLEWARES ================
-app.use(morgan('dev')); // generate response logs
+// We want to call this middleware only on development environment
+if (process.env.NODE_ENV === 'development') app.use(morgan('dev')); // generate response logs
+
 app.use(express.json()); // The middleware attach a body in req
 app.use(express.static(`${__dirname}/public`)); // we can now access to static files from public folder
 
