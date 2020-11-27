@@ -9,7 +9,7 @@ const router = express.Router(); // creates a new router
 router
   .route('/')
   .get(tourController.getAllTours)
-  .post(tourController.checkBody, tourController.createTour); // checkBody middleware will be called before the createTour middleware
+  .post(tourController.createTour);
 router
   .route('/:id')
   .get(tourController.getTour)
