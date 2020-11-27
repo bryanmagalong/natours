@@ -55,13 +55,23 @@ exports.createTour = async (req, res) => {
   }
 };
 
-exports.updateTour = (req, res) => {
-  //TODO when we get into databased AP
+exports.updateTour = async (req, res) => {
+  try {
+    const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+      new: true, // the method will returns the tour after update is applied
+      runValidators: true, // runs validators on update
+    });
 
-  res.status(200).json({
-    status: 'success',
-    data: '<Updated tour>',
-  });
+    res.status(200).json({
+      status: 'success',
+      data: { tour },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: 'fail',
+      message: err,
+    });
+  }
 };
 
 exports.deleteTour = (req, res) => {
