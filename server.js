@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
@@ -16,10 +17,26 @@ mongoose
     useCreateIndex: true,
     useFindAndModify: false,
   })
-  .then((con) => {
-    console.log(con.connection);
-    console.log('DB connection successful!!!');
-  });
+  .then(() => console.log('DB connection successful!!!'));
+
+// Tour schema
+const tourSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    required: [ true, 'A tour must have a name!' ],
+    unique: true,
+  },
+  rating: {
+    type: Number,
+    default: 4.5,
+  },
+  price: {
+    type: Number,
+    require: [ true, 'A tour must have a price!' ],
+  },
+});
+
+const Tour = mongoose.model('Tour', tourSchema); // creates a model from the tour schema
 
 const app = require('./app');
 
