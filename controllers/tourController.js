@@ -1,9 +1,29 @@
+/* eslint-disable prettier/prettier */
 const Tour = require('../models/tourModel');
 
 exports.getAllTours = async (req, res) => {
   try {
-    const tours = await Tour.find();
+    // console.log(req.query);
 
+    const queryObj = { ...req.query }; // we copy the query obj
+    const excludedFields = [ 'page', 'sort', 'limit', 'fields' ];
+    excludedFields.forEach((el) => delete queryObj[el]); // will delete in queryObj all matching fields
+
+    //===== BUILD THE QUERY
+    // Query method 1
+    const query = Tour.find(queryObj);
+
+    // Query method 2
+    // const query = await Tour.find()
+    //   .where('duration')
+    //   .equals(5)
+    //   .where('difficulty')
+    //   .equals('easy');
+
+    //===== EXECUTE THE QUERY
+    const tours = await query;
+
+    //===== SEND RESPONSE
     res.status(200).json({
       status: 'success',
       results: tours.length,
