@@ -3,7 +3,7 @@ const Tour = require('../models/tourModel');
 
 exports.getAllTours = async (req, res) => {
   try {
-    // console.log(req.query);
+    console.log(req.query);
 
     //===== FILTERING
     const queryObj = { ...req.query }; // we copy the query obj
@@ -12,15 +12,41 @@ exports.getAllTours = async (req, res) => {
 
     //===== ADVANCED FILTERING
     let queryStr = JSON.stringify(queryObj);
-
     // Regex: any occurence of 'gte', 'gt', 'lte', 'lt'
     // match parameter is the matched string
     queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
     // console.log(JSON.parse(queryStr));
 
     //===== BUILD THE QUERY
-    const query = Tour.find(JSON.parse(queryStr));
+    let query = Tour.find(JSON.parse(queryStr));
 
+    //===== SORTING
+    if (req.query.sort) {
+      // Sort query
+      // { sort: 'price -ratingsAverage' }
+      // sort by ascending price , if same price then sort by descending (-) ratingsAverage
+
+      // chaining a query
+      const sortBy = req.query.sort.split(',').join(' '); // replace all ',' with ' '
+      // console.log(sortBy);
+      query = query.sort(sortBy);
+    }
+    else {
+      // Default sort by descending creation date
+      query = query.sort('-createdAt');
+    }
+
+    // FIELD LIMITING
+    if (req.query.fields) {
+      // chaining a query
+      const fields = req.query.fields.split(',').join(' ');
+      console.log('FIELDS: ', fields);
+      query = query.select(fields); // query.select('name duration price')
+    }
+    else {
+      query = query.select('-__v'); // will exclude the '__v' field
+      // Can't combine exclusion and inclusion, ie. '-name duration'
+    }
     //===== EXECUTE THE QUERY
     const tours = await query;
 
