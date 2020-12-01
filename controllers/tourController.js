@@ -3,8 +3,8 @@ const Tour = require('../models/tourModel');
 
 exports.getAllTours = async (req, res) => {
   try {
-    console.log(req.query);
-
+    // console.log(req.query);
+    //==CHAINING METHODS
     //===== FILTERING
     const queryObj = { ...req.query }; // we copy the query obj
     const excludedFields = [ 'page', 'sort', 'limit', 'fields' ];
@@ -26,7 +26,6 @@ exports.getAllTours = async (req, res) => {
       // { sort: 'price -ratingsAverage' }
       // sort by ascending price , if same price then sort by descending (-) ratingsAverage
 
-      // chaining a query
       const sortBy = req.query.sort.split(',').join(' '); // replace all ',' with ' '
       // console.log(sortBy);
       query = query.sort(sortBy);
@@ -36,21 +35,35 @@ exports.getAllTours = async (req, res) => {
       query = query.sort('-createdAt');
     }
 
-    // FIELD LIMITING
+    //===== FIELD LIMITING
     if (req.query.fields) {
-      // chaining a query
       const fields = req.query.fields.split(',').join(' ');
-      console.log('FIELDS: ', fields);
       query = query.select(fields); // query.select('name duration price')
     }
     else {
       query = query.select('-__v'); // will exclude the '__v' field
       // Can't combine exclusion and inclusion, ie. '-name duration'
     }
-    //===== EXECUTE THE QUERY
+
+    //===== PAGINATION
+    const page = req.query.page * 1 || 1; // simple String conversion to Number
+    const limit = req.query.limit * 1 || 100;
+    const skip = (page - 1) * limit;
+    // 'skip' specifies the number of documents to skip
+    // 'limit' specifies the maximum number of documents the query will return
+    // page=3&limit=10 : we want to get to the third page containing documents n°21 to n°30
+    query = query.skip(skip).limit(limit);
+
+    // Case if the user asks for a page that doesn't exist
+    if (req.query.page) {
+      const numberTours = await Tour.countDocuments();
+      if (skip >= numberTours) throw new Error('This page does not exist');
+    }
+
+    //== EXECUTE THE QUERY
     const tours = await query;
 
-    //===== SEND RESPONSE
+    //== SEND RESPONSE
     res.status(200).json({
       status: 'success',
       results: tours.length,
