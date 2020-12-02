@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 const Tour = require('../models/tourModel');
+const APIFeatures = require('../utils/APIFeatures');
 
 exports.aliasTopTours = (req, res, next) => {
   // Prefilling fields
@@ -11,65 +12,15 @@ exports.aliasTopTours = (req, res, next) => {
 
 exports.getAllTours = async (req, res) => {
   try {
-    // console.log(req.query);
     //==CHAINING METHODS
-    //===== FILTERING
-    const queryObj = { ...req.query }; // we copy the query obj
-    const excludedFields = [ 'page', 'sort', 'limit', 'fields' ];
-    excludedFields.forEach((el) => delete queryObj[el]); // will delete in queryObj all matching fields
-
-    //===== ADVANCED FILTERING
-    let queryStr = JSON.stringify(queryObj);
-    // Regex: any occurence of 'gte', 'gt', 'lte', 'lt'
-    // match parameter is the matched string
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
-    // console.log(JSON.parse(queryStr));
-
-    //===== BUILD THE QUERY
-    let query = Tour.find(JSON.parse(queryStr));
-
-    //===== SORTING
-    if (req.query.sort) {
-      // Sort query
-      // { sort: 'price -ratingsAverage' }
-      // sort by ascending price , if same price then sort by descending (-) ratingsAverage
-
-      const sortBy = req.query.sort.split(',').join(' '); // replace all ',' with ' '
-      // console.log(sortBy);
-      query = query.sort(sortBy);
-    }
-    else {
-      // Default sort by descending creation date
-      query = query.sort('-createdAt');
-    }
-
-    //===== FIELD LIMITING
-    if (req.query.fields) {
-      const fields = req.query.fields.split(',').join(' ');
-      query = query.select(fields); // query.select('name duration price')
-    }
-    else {
-      query = query.select('-__v'); // will exclude the '__v' field
-      // Can't combine exclusion and inclusion, ie. '-name duration'
-    }
-
-    //===== PAGINATION
-    const page = req.query.page * 1 || 1; // simple String conversion to Number
-    const limit = req.query.limit * 1 || 100;
-    const skip = (page - 1) * limit;
-    // 'skip' specifies the number of documents to skip
-    // 'limit' specifies the maximum number of documents the query will return
-    // page=3&limit=10 : we want to get to the third page containing documents n°21 to n°30
-    query = query.skip(skip).limit(limit);
-
-    // Case if the user asks for a page that doesn't exist
-    if (req.query.page) {
-      const numberTours = await Tour.countDocuments();
-      if (skip >= numberTours) throw new Error('This page does not exist');
-    }
+    const features = new APIFeatures(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
 
     //== EXECUTE THE QUERY
-    const tours = await query;
+    const tours = await features.query;
 
     //== SEND RESPONSE
     res.status(200).json({
