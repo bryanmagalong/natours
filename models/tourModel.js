@@ -67,34 +67,22 @@ const tourSchema = new mongoose.Schema(
     },
   },
   {
-    toJSON: { virtuals: true }, // each time the data is outputed as JSON, we want virtuals properties to be part of the output
-    toObject: { virtuals: true }, // each time the data is outputed as an Object
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   },
 );
 
-/**
- * Virtual property, not saved in database.
- * We use the regular function format in order to access to 'this'
- * We can't query for those properties
- * */
 tourSchema.virtual('durationWeeks').get(function() {
-  return this.duration / 7; // 'this' refers to the current document
+  return this.duration / 7;
 });
 
 //==== DOCUMENT MIDDLEWARE
-// here, 'this' will refer to the current document
-// runs before the .save() and .create() methods
 tourSchema.pre('save', function(next) {
   this.slug = slugify(this.name, { lower: true });
   next();
 });
 
 //==== QUERY MIDDLEWARE
-// here, 'this' will refer to a query object
-// runs before the .find() query method
-
-// tourSchema.pre('find', function(next) {
-// REGEX: anything sarting with find
 tourSchema.pre(/^find/, function(next) {
   this.find({ secretTour: { $ne: true } });
   this.start = Date.now();
@@ -103,10 +91,19 @@ tourSchema.pre(/^find/, function(next) {
 
 tourSchema.post(/^find/, function(docs, next) {
   console.log(`==== Query took ${Date.now() - this.start} milliseconds!!!!`);
-  // console.log(docs);
   next();
 });
 
-const Tour = mongoose.model('Tour', tourSchema); // creates a model from the tour schema
+//==== AGGREGATION MIDDLEWARE
+// here, 'this' refers to the aggregation object
+tourSchema.pre('aggregate', function(next) {
+  // Adds a new stage at the start of the array
+  this.pipeline().unshift({ $match: { secretTour: { $ne: true } } });
+  console.log(this.pipeline());
+
+  next();
+});
+
+const Tour = mongoose.model('Tour', tourSchema);
 
 module.exports = Tour;
