@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+const validator = require('validator');
 
 // Tour schema
 const tourSchema = new mongoose.Schema(
@@ -18,6 +19,11 @@ const tourSchema = new mongoose.Schema(
         10,
         'A tour name must have more or equal than 10 characters',
       ],
+      // validation with validator.js
+      // validate: [
+      //   validator.isAlpha,
+      //   'Tour name must only contains characters',
+      // ],
     },
     slug: {
       type: String,
@@ -54,6 +60,13 @@ const tourSchema = new mongoose.Schema(
     },
     priceDiscount: {
       type: Number,
+      validate: {
+        validator: function(val) {
+          // 'this' only points to the current document on NEW document creation
+          return val < this.price;
+        },
+        message: 'Discount price ({VALUE}) should be below the regular pice',
+      },
     },
     summary: {
       type: String,
