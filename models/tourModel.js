@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 const mongoose = require('mongoose');
+const slugify = require('slugify');
 
 // Tour schema
 const tourSchema = new mongoose.Schema(
@@ -9,6 +10,9 @@ const tourSchema = new mongoose.Schema(
       required: [ true, 'A tour must have a name!' ],
       unique: true,
       trim: true, // remove all the white spaces on the beginning and the end of the string
+    },
+    slug: {
+      type: String,
     },
     duration: {
       type: Number,
@@ -72,6 +76,18 @@ const tourSchema = new mongoose.Schema(
 tourSchema.virtual('durationWeeks').get(function() {
   return this.duration / 7; // 'this' refers to the current document
 });
+
+// Document middleware: runs before the .save() and .create() methods
+tourSchema.pre('save', function(next) {
+  this.slug = slugify(this.name, { lower: true });
+  next();
+});
+
+// runs after the .save() and .create() methods
+// tourSchema.post('save', function(doc, next) {
+//   console.log(doc); // doc is the finished document
+//   next();
+// });
 
 const Tour = mongoose.model('Tour', tourSchema); // creates a model from the tour schema
 
