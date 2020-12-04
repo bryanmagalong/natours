@@ -1,6 +1,8 @@
 const express = require('express');
 const morgan = require('morgan');
 
+const AppError = require('./utils/AppError');
+const globalErrorHandler = require('./controllers/errorController');
 const tourRouter = require('./routes/tourRoutes');
 const userRouter = require('./routes/userRoutes');
 
@@ -25,31 +27,15 @@ app.use('/api/v1/users', userRouter);
 // This middleware will run only if the url is not handled by any router
 // all: get, patch, post, delete method
 app.all('*', (req, res, next) => {
-  // res.status(404).json({
-  //   status: 'fail',
-  //   message: `Can't find ${req.originalUrl} on this server!`,
-  // });
-  const err = new Error(`Can't find ${req.originalUrl} on this server!`);
-  err.status = 'fail';
-  err.statusCode = 404;
-
   /*
    * If an argument is passed in next(),
    * Express will assume that there was an error
    * and will skip all the middlewares in the middleware stack
    * and send the error to the error handling middleware */
-  next(err);
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
 });
 
 //==== ERROR HANDLING MIDDLEWARE
-app.use((err, req, res, next) => {
-  err.statusCode = err.statusCode || 500; // default status code
-  err.status = err.status || 'error';
-
-  res.status(err.statusCode).json({
-    status: err.status,
-    message: err.message,
-  });
-});
+app.use(globalErrorHandler);
 
 module.exports = app;
