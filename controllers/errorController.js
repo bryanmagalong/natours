@@ -1,4 +1,12 @@
+const AppError = require('../utils/AppError');
+
 /* eslint-disable prettier/prettier */
+const handleCastErrorDB = (err) => {
+  const message = `Invalid ${err.path}: ${err.value}`;
+
+  return new AppError(message, 400);
+};
+
 const sendErrorDev = (err, res) => {
   res.status(err.statusCode).json({
     status: err.status,
@@ -16,7 +24,7 @@ const sendErrorProd = (err, res) => {
     });
   }
   else {
-    console.error('!!!!! ERROR !!!!!: ', err);
+    // console.error('!!!!! ERROR !!!!!:\n ', err);
 
     res.status(err.statusCode).json({
       status: 'error',
@@ -34,6 +42,15 @@ module.exports = (err, req, res, next) => {
   }
 
   if (process.env.NODE_ENV === 'production') {
-    sendErrorProd(err, res);
+    /**
+     * When we create a copy of an object by destructuring,
+     * we only copy enumerable attributes
+     * Error.prototype.name is not enumerable therefore
+     * it will not be copied into a new objet
+     */
+    let error = { ...err, name: err.name };
+
+    if (error.name === 'CastError') error = handleCastErrorDB(error);
+    sendErrorProd(error, res);
   }
 };
