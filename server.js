@@ -2,6 +2,14 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 
+process.on('uncaughtException', (err) => {
+  console.log('=======/ UNCAUGHT EXCEPTION /========');
+  console.log('===/Error: ', err.name);
+  console.log('===/Message: ', err.message);
+
+  process.exit(1);
+});
+
 dotenv.config({ path: './config.env' }); // configure environment variables from the config.env file
 // Need to be configured before running the app file
 // console.log(process.env); // Display environment variables
