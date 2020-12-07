@@ -23,6 +23,16 @@ const app = require('./app');
 
 // Start server
 const port = process.env.PORT || 3000;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`App running on port ${port} ...`);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.log('=======/Error: ', err.name);
+  console.log('=======/Message: ', err.message);
+  console.log('=======/ UNHANDLED REJECTION /========');
+
+  server.close(() => {
+    process.exit(1);
+  });
 });
