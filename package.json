@@ -4,6 +4,7 @@
   "description": "Learning node, express, mongodb",
   "main": "app.js",
   "scripts": {
+    "node:install": "sudo n 10.15.3",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server.js",
     "start:prod": "NODE_ENV=production nodemon server.js"
