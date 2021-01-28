@@ -17,6 +17,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm,
     passwordChangedAt: req.body.passwordChangedAt,
+    role: req.body.role,
   });
 
   // Creates a jwt token
@@ -93,3 +94,14 @@ exports.protect = catchAsync(async (req, res, next) => {
   req.user = freshUser;
   next();
 });
+
+exports.restrictTo = (...roles) => (req, res, next) => {
+  // since restrictTo is called after protect
+  // req.user is available
+  if (!roles.includes(req.user.role))
+    return next(
+      new AppError('You do not have permission to perform this action', 403),
+    );
+
+  next();
+};
