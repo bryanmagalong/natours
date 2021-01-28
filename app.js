@@ -17,6 +17,7 @@ app.use(express.static(`${__dirname}/public`)); // we can now access to static f
 
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
+  console.log(req.headers);
   next();
 });
 
