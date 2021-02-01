@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [ true, 'Please provide a password' ],
-    minlenght: 8,
+    minlength: [ 8, 'Your password must contain 8 or more characters!' ],
     select: false, // will not show up on any reading output
   },
   passwordConfirm: {
@@ -53,6 +53,13 @@ userSchema.pre('save', async function(next) {
   // after successfull validation, passwordConfirm is not useful
   this.passwordConfirm = undefined;
 
+  next();
+});
+
+userSchema.pre('save', function(next) {
+  if (!this.isModified('password') || this.isNew) return next();
+
+  this.passwordChangedAt = Date.now() - 1000;
   next();
 });
 
