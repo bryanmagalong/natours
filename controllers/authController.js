@@ -15,6 +15,21 @@ const signToken = (id) =>
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
 
+  // Defining JWT cookie
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+    ),
+    httpOnly: true, // cookie cannot be accessed/modified in any way by the browser
+  };
+
+  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true; // cookie will be sent only on an encrypted connexion(https)
+
+  res.cookie('jwt', token, cookieOptions);
+
+  // Remove the password from output
+  user.password = undefined;
+
   res.status(statusCode).json({
     status: 'success',
     token,
