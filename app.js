@@ -1,9 +1,11 @@
+/* eslint-disable prettier/prettier */
 const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
+const hpp = require('hpp');
 
 const AppError = require('./utils/AppError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -38,6 +40,20 @@ app.use(mongoSanitize());
 
 // Data Sanitization against XSS
 app.use(xss());
+
+// HTTP Parameters Pollution
+app.use(
+  hpp({
+    whiteList: [
+      'duration',
+      'ratingsQuantity',
+      'ratingsAverage',
+      'maxGroupSize',
+      'difficulty',
+      'prize',
+    ],
+  }),
+);
 
 // Serving static files
 app.use(express.static(`${__dirname}/public`)); // we can now access to static files from public folder
