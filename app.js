@@ -2,6 +2,8 @@ const express = require('express');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
 
 const AppError = require('./utils/AppError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -30,6 +32,12 @@ app.use('/api', limiter); // apply this limiter middleware only on our api
 // The middleware attach a body in req
 // limit: '10kb': req.body exceeding 10kb will not be accepted
 app.use(express.json({ limit: '10kb' }));
+
+// Data Sanitization against NoSQL Query Injection
+app.use(mongoSanitize());
+
+// Data Sanitization against XSS
+app.use(xss());
 
 // Serving static files
 app.use(express.static(`${__dirname}/public`)); // we can now access to static files from public folder
