@@ -1,5 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
 
 const AppError = require('./utils/AppError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -11,6 +12,15 @@ const app = express();
 // MIDDLEWARES ================
 // We want to call this middleware only on development environment
 if (process.env.NODE_ENV === 'development') app.use(morgan('dev')); // generate response logs
+
+// Rate Limit: to prevent DoS and brute force attacks
+const limiter = rateLimit({
+  max: 100, // max number of requests allowed
+  windowMs: 60 * 60 * 1000, // allow "max" number request per IP / windowMs
+  message: 'Too many request from this IP. Please try again in a hour.',
+});
+
+app.use('/api', limiter); // apply this limiter middleware only on our api
 
 app.use(express.json()); // The middleware attach a body in req
 app.use(express.static(`${__dirname}/public`)); // we can now access to static files from public folder
