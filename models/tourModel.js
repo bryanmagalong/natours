@@ -153,6 +153,15 @@ tourSchema.post(/^find/, function(docs, next) {
   next();
 });
 
+tourSchema.pre(/^find/, function(next) {
+  // in query middlewares, this always points to the query
+  this.populate({
+    path: 'guides',
+    select: '-__v -passwordChangedAt',
+  });
+  next();
+});
+
 //==== AGGREGATION MIDDLEWARE
 // here, 'this' refers to the aggregation object
 tourSchema.pre('aggregate', function(next) {
